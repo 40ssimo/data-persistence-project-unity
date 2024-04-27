@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,6 +12,8 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text highscoreNameText;
+
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -19,7 +22,7 @@ public class MainManager : MonoBehaviour
     private bool m_GameOver = false;
 
     
-    // Start is called before the first frame update
+    // Start is called before the first frame update    
     void Start()
     {
         const float step = 0.6f;
@@ -36,6 +39,8 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        SetPreviousHighscoreOnGame();
     }
 
     private void Update()
@@ -72,5 +77,39 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+
+        DataManager.Instance.highscore = m_Points;
+
+        var data = DataManager.Instance.GetData();
+
+        if (DataManager.Instance.nameChanged && (DataManager.Instance.playerName != "Anonymous") && (m_Points > data.highscore))
+        {
+            highscoreNameText.text = "Best Score : " + DataManager.Instance.playerName + " : " + DataManager.Instance.highscore;
+        } else if (m_Points > data.highscore)
+        {
+            DataManager.Instance.playerName = "Anonymous";
+            highscoreNameText.text = "Best Score : " + DataManager.Instance.playerName + " : " + DataManager.Instance.highscore;
+        }
+
+        DataManager.Instance.SaveData();
+        
     }
+
+    public void SetPreviousHighscoreOnGame()
+    {
+        var data = DataManager.Instance.GetData();
+
+        if (DataManager.Instance.highscore != 0)
+        {
+            highscoreNameText.text = "Best Score : " + data.playerName + " : " + data.highscore;
+        }
+    }
+
+    public void BackToMenu()
+    {
+        
+        SceneManager.LoadScene(0);
+    }
+
+    
 }
